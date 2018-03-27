@@ -22,7 +22,10 @@ func main() {
 	}
 
 	out, _ := os.Create("pure.go")
+	defer out.Close()
 
+	fmt.Fprintln(out, "// DO NOT EDIT")
+	fmt.Fprintln(out)
 	fmt.Fprintf(out, "package %s\n", node.Name.Name)
 	fmt.Fprintln(out)
 	fmt.Fprintln(out, `import (
@@ -53,7 +56,7 @@ func main() {
 			}
 
 			fmt.Fprintf(out, `func PureFormat%s(s %s) string {
-	var buf bytes.Buffer
+	var buf = &bytes.Buffer{}
 
 `, givenType.Name.Name, givenType.Name.Name)
 
@@ -70,7 +73,7 @@ func main() {
 					strings.ToLower(fieldName)
 					fmt.Fprintf(
 						out,
-						`	buf.WriteString(fmt.Sprintf("%s: %%v\n", s.%s))`,
+						`	fmt.Fprintf(buf, "%s: %%v\n", s.%s)`,
 						strings.ToLower(fieldName),
 						fieldName,
 					)

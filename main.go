@@ -47,14 +47,14 @@ func PureParseUser(userJson []byte) User {
 
 func FormatUser(u User) string {
 	v := reflect.ValueOf(u)
-	var buf bytes.Buffer
+	var buf = &bytes.Buffer{}
 
 	for i := 0; i < v.NumField(); i++ {
 		typeF := v.Type().Field(i)
 		tag := typeF.Tag
 
 		if tag.Get("print") == "true" {
-			buf.WriteString(fmt.Sprintf("%s: %v\n", tag.Get("json"), v.Field(i)))
+			fmt.Fprintf(buf, "%s: %v\n", tag.Get("json"), v.Field(i))
 		}
 	}
 

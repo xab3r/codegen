@@ -1,3 +1,5 @@
+// DO NOT EDIT
+
 package main
 
 import (
@@ -6,10 +8,10 @@ import (
 )
 
 func PureFormatUser(s User) string {
-	var buf bytes.Buffer
+	var buf = &bytes.Buffer{}
 
-	buf.WriteString(fmt.Sprintf("name: %v\n", s.Name))
-	buf.WriteString(fmt.Sprintf("age: %v\n", s.Age))
+	fmt.Fprintf(buf, "name: %v\n", s.Name)
+	fmt.Fprintf(buf, "age: %v\n", s.Age)
 
 	return buf.String()
 }
