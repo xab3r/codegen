@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"log"
 	"os"
@@ -21,17 +23,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	out, _ := os.Create("pure.go")
-	defer out.Close()
+	var out = new(bytes.Buffer)
 
-	fmt.Fprintln(out, "// DO NOT EDIT")
-	fmt.Fprintln(out)
 	fmt.Fprintf(out, "package %s\n", node.Name.Name)
-	fmt.Fprintln(out)
-	fmt.Fprintln(out, `import (
-	"bytes"
-	"fmt"
-)`)
+	fmt.Fprintln(out,
+		`import (
+			"bytes"
+			"fmt"
+		)`,
+	)
 	fmt.Fprintln(out)
 
 	for _, decl := range node.Decls {
@@ -55,10 +55,14 @@ func main() {
 				continue SPECS
 			}
 
-			fmt.Fprintf(out, `func PureFormat%s(s %s) string {
-	var buf = &bytes.Buffer{}
+			fmt.Fprintf(out,
+				`func PureFormat%s(s %s) string {
+					var buf = &bytes.Buffer{}
 
-`, givenType.Name.Name, givenType.Name.Name)
+				`,
+				givenType.Name.Name,
+				givenType.Name.Name,
+			)
 
 		FILEDS:
 			for _, field := range givenStruct.Fields.List {
@@ -72,7 +76,7 @@ func main() {
 					fieldName := field.Names[0].Name
 					fmt.Fprintf(
 						out,
-						`	fmt.Fprintf(buf, "%s: %%v\n", s.%s)`,
+						`fmt.Fprintf(buf, "%s: %%v\n", s.%s)`,
 						strings.ToLower(fieldName),
 						fieldName,
 					)
@@ -83,9 +87,22 @@ func main() {
 
 			fmt.Fprintln(out,
 				`
-	return buf.String()
-}`)
+					return buf.String()
+				}`,
+			)
 
 		}
 	}
+
+	srcSet := token.NewFileSet()
+	srcAstFile, err := parser.ParseFile(srcSet, "", out, 0)
+	if err != nil {
+		panic("Something went wrong")
+	}
+
+	src, _ := os.Create("pure.go")
+	defer src.Close()
+
+	fmt.Fprintf(src, "// DO NOT EDIT\n\n")
+	printer.Fprint(src, srcSet, srcAstFile)
 }
