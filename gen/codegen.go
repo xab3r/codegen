@@ -45,7 +45,7 @@ func main() {
 		for _, spec := range gen.Specs {
 			givenType, ok := spec.(*ast.TypeSpec)
 			if !ok {
-				fmt.Printf("Skipping %v - it's not *ast.TypeSpec\n", givenType)
+				fmt.Printf("Skipping %v - it's not *ast.TypeSpec\n", spec)
 				continue
 			}
 
@@ -70,7 +70,6 @@ func main() {
 					}
 
 					fieldName := field.Names[0].Name
-					strings.ToLower(fieldName)
 					fmt.Fprintf(
 						out,
 						`	fmt.Fprintf(buf, "%s: %%v\n", s.%s)`,
